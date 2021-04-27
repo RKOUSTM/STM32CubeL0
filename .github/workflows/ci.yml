@@ -1,0 +1,32 @@
+# This workflow defines a couple of jobs to run in the frame of the automatic
+# continuous integration (ACI)
+
+name: Automatic Continuous Integration (ACI)
+
+# Controls when the action will run. Triggers the workflow on push events
+on: [push]
+
+# A workflow is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    name: Compilation
+    steps:
+      # Clone the repository using the "checkout" GH action.
+      - name: Checkout
+        uses: actions/checkout@master
+      # Compile the source files using the "compile" user-defined action.
+      - name: Compile
+        id: compile
+        uses: RKOUSTM/actions/compile@main
+        with:
+          gcc-url: 'https://developer.arm.com/-/media/Files/downloads/gnu-rm/7-2018q2/gcc-arm-none-eabi-7-2018-q2-update-linux.tar.bz2?revision=bc2c96c0-14b5-4bb4-9f18-bceb4050fee7?product=GNU%20Arm%20Embedded%20Toolchain,64-bit,,Linux,7-2018-q2-update'
+          stm32-series: 'L0'
+          define-list: '-DSTM32L053xD'
+          option-list: '-march=armv7e-m -mthumb'
+      # Log compilation result using the output from the "compile" step.
+      - name: Log
+        if: failure()
+        run: |
+          cat ${{ steps.compile.outputs.compile-result }}
+          exit 1
